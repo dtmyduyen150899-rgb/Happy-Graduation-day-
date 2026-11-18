@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Chúc Mừng Tốt Nghiệp - Nguyễn Thị Trang</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Great+Vibes&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 50% 35%, #111d38 0%, #070c18 55%, #02040a 100%);
+      font-family: 'Montserrat', sans-serif;
+      color: #fff;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    canvas#fxCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .scene {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(14px, 3vh, 32px) 16px clamp(16px, 3.5vh, 34px);
+    }
+
+    /* Header Titles */
+    .header-box {
+      text-align: center;
+      z-index: 5;
+      animation: fadeDown 1.2s ease-out forwards;
+    }
+
+    .badge-grad {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 16px;
+      border-radius: 999px;
+      background: rgba(255, 215, 0, 0.12);
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      color: #ffd966;
+      font-size: clamp(0.68rem, 1.8vw, 0.82rem);
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      box-shadow: 0 0 18px rgba(255, 215, 0, 0.18);
+    }
+
+    .main-title {
+      font-family: 'Great Vibes', cursive;
+      font-size: clamp(2.6rem, 7.5vw, 5.2rem);
+      font-weight: 400;
+      line-height: 1.1;
+      background: linear-gradient(90deg, #fceabb 0%, #f8b500 25%, #fff5cc 50%, #e5a93c 75%, #fceabb 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 16px rgba(248, 181, 0, 0.45));
+      animation: shimmerText 4s linear infinite;
+    }
+
+    .recipient-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.35rem, 3.8vw, 2.35rem);
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #fff6dc;
+      margin-top: 2px;
+      text-shadow: 0 0 14px rgba(255, 200, 80, 0.55), 0 2px 6px rgba(0, 0, 0, 0.8);
+      animation: pulseGlow 3s ease-in-out infinite;
+    }
+
+    /* Centerpiece Bouquet */
+    .bouquet-stage {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      max-width: 460px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+      cursor: pointer;
+    }
+
+    .bouquet-glow {
+      position: absolute;
+      width: min(76vw, 350px);
+      height: min(76vw, 350px);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(220, 20, 60, 0.32) 0%, rgba(255, 195, 0, 0.12) 45%, transparent 72%);
+      filter: blur(18px);
+      animation: breatheGlow 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    canvas#bouquetCanvas {
+      width: min(86vw, 410px);
+      height: min(56vh, 470px);
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.75));
+      animation: floatBouquet 5s ease-in-out infinite;
+    }
+
+    /* Footer Running Text & Hint */
+    .footer-box {
+      width: 100%;
+      max-width: 860px;
+      text-align: center;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .marquee-wrap {
+      width: 100%;
+      overflow: hidden;
+      padding: 10px 0;
+      border-top: 1px solid rgba(255, 215, 0, 0.22);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.22);
+      background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.07), transparent);
+      mask-image: linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+    }
+
+    .marquee-track {
+      display: inline-flex;
+      white-space: nowrap;
+      animation: marqueeScroll 22s linear infinite;
+    }
+
+    .marquee-track:hover {
+      animation-play-state: paused;
+    }
+
+    .wish-text {
+      font-size: clamp(0.88rem, 2.3vw, 1.08rem);
+      font-weight: 500;
+      color: #ffefc2;
+      letter-spacing: 0.6px;
+      padding-right: 60px;
+      text-shadow: 0 0 10px rgba(255, 204, 77, 0.35);
+    }
+
+    .wish-text span {
+      color: #ffd24d;
+      font-weight: 700;
+    }
+
+    .tap-hint {
+      font-size: 0.75rem;
+      color: rgba(255, 236, 179, 0.65);
+      letter-spacing: 1px;
+      animation: fadePulse 2.5s infinite;
+    }
+
+    @keyframes shimmerText {
+      0% { background-position: 0% center; }
+      100% { background-position: 200% center; }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { text-shadow: 0 0 12px rgba(255, 200, 80, 0.45), 0 2px 6px rgba(0, 0, 0, 0.8); }
+      50% { text-shadow: 0 0 24px rgba(255, 215, 90, 0.85), 0 0 36px rgba(220, 38, 38, 0.4); }
+    }
+
+    @keyframes breatheGlow {
+      0%, 100% { transform: scale(0.95); opacity: 0.75; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+
+    @keyframes floatBouquet {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(0.6deg); }
+    }
+
+    @keyframes marqueeScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadePulse {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 0.95; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="fxCanvas"></canvas>
+
+  <main class="scene">
+    <header class="header-box">
+      <div class="badge-grad">🎓 Happy Graduation • 2026 🎓</div>
+      <h1 class="main-title">Chúc Mừng Tốt Nghiệp</h1>
+      <div class="recipient-name">Nguyễn Thị Trang</div>
+    </header>
+
+    <section class="bouquet-stage" id="bouquetStage" title="Chạm để bắn pháo hoa chúc mừng!">
+      <div class="bouquet-glow"></div>
+      <canvas id="bouquetCanvas" width="520" height="600"></canvas>
+    </section>
+
+    <footer class="footer-box">
+      <div class="marquee-wrap">
+        <div class="marquee-track">
+          <div class="wish-text">
+            ✨ Chúc tân cử nhân <span>Nguyễn Thị Trang</span> vững bước trên chặng đường mới, rực rỡ thành công và luôn giữ trọn ngọn lửa đam mê! 🌹🎓
+          </div>
+          <div class="wish-text">
+            ✨ Chúc tân cử nhân <span>Nguyễn Thị Trang</span> vững bước trên chặng đường mới, rực rỡ thành công và luôn giữ trọn ngọn lửa đam mê! 🌹🎓
+          </div>
+        </div>
+      </div>
+      <div class="tap-hint">✦ Chạm vào màn hình bất kỳ để bắn pháo hoa ăn mừng ✦</div>
+    </footer>
+  </main>
+
+  <script>
+    /* =========================================================
+       1. VẼ BÓ HOA HỒNG ĐỎ NHUNG GÓI GIẤY ĐEN THẮT NƠ ĐỎ (CANVAS)
+       ========================================================= */
+    const bCanvas = document.getElementById('bouquetCanvas');
+    const bCtx = bCanvas.getContext('2d');
+
+    function drawRose(ctx, x, y, radius, angle, bloomProgress) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      const r = radius * bloomProgress;
+
+      // Outer shadow for depth
+      ctx.shadowColor = 'rgba(25, 0, 5, 0.65)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 3;
+
+      // Base dark velvet crimson circle
+      const baseGrad = ctx.createRadialGradient(0, 0, r * 0.1, 0, 0, r);
+      baseGrad.addColorStop(0, '#590010');
+      baseGrad.addColorStop(0.6, '#9e001c');
+      baseGrad.addColorStop(1, '#4a000d');
+      ctx.fillStyle = baseGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
+
+      // Layered concentric rose petals
+      const layers = [
+        { count: 7, dist: 0.56, size: 0.56, c1: '#8b0016', c2: '#d90429', edge: '#ff4d6d' },
+        { count: 6, dist: 0.40, size: 0.46, c1: '#a4001d', c2: '#ef233c', edge: '#ff758f' },
+        { count: 5, dist: 0.25, size: 0.35, c1: '#800013', c2: '#d90429', edge: '#ff8fa3' },
+        { count: 4, dist: 0.12, size: 0.23, c1: '#59000d', c2: '#b8001f', edge: '#ff4d6d' }
+      ];
+
+      layers.forEach((layer, lIdx) => {
+        for (let i = 0; i < layer.count; i++) {
+          const theta = (i / layer.count) * Math.PI * 2 + lIdx * 0.65;
+          ctx.save();
+          ctx.rotate(theta);
+
+          const pGrad = ctx.createLinearGradient(0, -r * layer.dist, 0, r * (layer.dist + layer.size));
+          pGrad.addColorStop(0, layer.c1);
+          pGrad.addColorStop(0.75, layer.c2);
+          pGrad.addColorStop(1, layer.edge);
+
+          ctx.fillStyle = pGrad;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.bezierCurveTo(
+            -r * layer.size * 0.95, r * layer.dist * 0.5,
+            -r * layer.size * 1.15, r * (layer.dist + layer.size * 0.95),
+            0, r * (layer.dist + layer.size)
+          );
+          ctx.bezierCurveTo(
+            r * layer.size * 1.15, r * (layer.dist + layer.size * 0.95),
+            r * layer.size * 0.95, r * layer.dist * 0.5,
+            0, 0
+          );
+          ctx.fill();
+
+          // Subtle velvet petal rim highlight
+          ctx.strokeStyle = 'rgba(255, 160, 180, 0.35)';
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+          ctx.restore();
+        }
+      });
+
+      // Center rosebud spiral
+      ctx.fillStyle = '#4a000b';
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.12, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Generate dense dome of 45 roses matching the round Korean bouquet
+    const roses = [];
+    const centerX = 260;
+    const centerY = 225;
+    const domeRx = 148;
+    const domeRy = 104;
+
+    // Back-to-front rows so lower roses overlap upper roses naturally
+    const rows = [
+      { yOff: -78, count: 7, rx: 102, rSize: 23 },
+      { yOff: -52, count: 9, rx: 128, rSize: 25 },
+      { yOff: -22, count: 10, rx: 142, rSize: 26 },
+      { yOff: 10,  count: 10, rx: 140, rSize: 27 },
+      { yOff: 42,  count: 8,  rx: 120, rSize: 26 },
+      { yOff: 70,  count: 5,  rx: 84,  rSize: 25 }
+    ];
+
+    rows.forEach((row, rIdx) => {
+      for (let i = 0; i < row.count; i++) {
+        const t = row.count === 1 ? 0 : (i / (row.count - 1)) * 2 - 1;
+        const jitterX = Math.sin(rIdx * 13 + i * 7) * 5;
+        const jitterY = Math.cos(rIdx * 11 + i * 5) * 4;
+        const archY = (1 - t * t) * -12; // dome curve
+        roses.push({
+          x: centerX + t * row.rx + jitterX,
+          y: centerY + row.yOff + archY + jitterY,
+          r: row.rSize + (i % 2 === 0 ? 1.5 : -1),
+          angle: (rIdx * 0.9 + i * 1.3),
+          delay: (rIdx * 0.08 + Math.abs(t) * 0.15)
+        });
+      }
+    });
+
+    function drawBouquet(timeSec) {
+      bCtx.clearRect(0, 0, bCanvas.width, bCanvas.height);
+
+      // --- A. BACK MATTE BLACK WRAPPING PAPER (HALO HOOD) ---
+      bCtx.save();
+      const backPaperGrad = bCtx.createLinearGradient(100, 70, 420, 320);
+      backPaperGrad.addColorStop(0, '#1e2024');
+      backPaperGrad.addColorStop(0.5, '#121316');
+      backPaperGrad.addColorStop(1, '#26292e');
+
+      bCtx.fillStyle = backPaperGrad;
+      bCtx.strokeStyle = '#383c44';
+      bCtx.lineWidth = 2;
+
+      // Outer rounded Korean bouquet hood
+      bCtx.beginPath();
+      bCtx.moveTo(95, 235);
+      bCtx.bezierCurveTo(75, 130, 155, 78, 260, 78);
+      bCtx.bezierCurveTo(365, 78, 445, 130, 425, 235);
+      bCtx.lineTo(365, 345);
+      bCtx.lineTo(155, 345);
+      bCtx.closePath();
+      bCtx.fill();
+      bCtx.stroke();
+
+      // Inner dark lining shadow
+      bCtx.fillStyle = '#090a0c';
+      bCtx.beginPath();
+      bCtx.ellipse(260, 215, 162, 122, 0, 0, Math.PI * 2);
+      bCtx.fill();
+      bCtx.restore();
+
+      // --- B. LOWER WRAPPING SKIRT (BLACK PAPER TAIL) ---
+      bCtx.save();
+      const skirtGrad = bCtx.createLinearGradient(160, 320, 350, 570);
+      skirtGrad.addColorStop(0, '#17191c');
+      skirtGrad.addColorStop(0.5, '#23262b');
+      skirtGrad.addColorStop(1, '#101114');
+
+      // Left lower paper sheet
+      bCtx.fillStyle = skirtGrad;
+      bCtx.beginPath();
+      bCtx.moveTo(165, 320);
+      bCtx.lineTo(132, 495);
+      bCtx.lineTo(225, 535);
+      bCtx.lineTo(255, 340);
+      bCtx.closePath();
+      bCtx.fill();
+      bCtx.strokeStyle = '#32363d';
+      bCtx.lineWidth = 1.5;
+      bCtx.stroke();
+
+      // Right main lower paper sheet
+      bCtx.beginPath();
+      bCtx.moveTo(220, 330);
+      bCtx.lineTo(175, 565);
+      bCtx.lineTo(318, 578);
+      bCtx.lineTo(345, 330);
+      bCtx.closePath();
+      bCtx.fill();
+      bCtx.stroke();
+      bCtx.restore();
+
+      // --- C. 45 RED VELVET ROSES ---
+      roses.forEach((rose) => {
+        const rawP = Math.min(1, Math.max(0, (timeSec - rose.delay) / 1.1));
+        // Smooth easeOutBack bloom
+        const c1 = 1.70158;
+        const c3 = c1 + 1;
+        const bloom = rawP === 0 ? 0 : 1 + c3 * Math.pow(rawP - 1, 3) + c1 * Math.pow(rawP - 1, 2);
+        drawRose(bCtx, rose.x, rose.y, rose.r, rose.angle, Math.max(0.01, bloom));
+      });
+
+      // --- D. FRONT LAYERED BLACK MATTE PAPER FOLDS ---
+      bCtx.save();
+      // Left front wing fold
+      const foldLeft = bCtx.createLinearGradient(75, 220, 250, 360);
+      foldLeft.addColorStop(0, '#2a2d33');
+      foldLeft.addColorStop(0.6, '#181a1e');
+      foldLeft.addColorStop(1, '#101215');
+      bCtx.fillStyle = foldLeft;
+      bCtx.beginPath();
+      bCtx.moveTo(86, 200);
+      bCtx.quadraticCurveTo(72, 265, 118, 315);
+      bCtx.lineTo(258, 372);
+      bCtx.lineTo(245, 322);
+      bCtx.quadraticCurveTo(148, 302, 102, 232);
+      bCtx.closePath();
+      bCtx.fill();
+      bCtx.strokeStyle = '#3c4048';
+      bCtx.lineWidth = 1.5;
+      bCtx.stroke();
+
+      // Right front wing fold
+      const foldRight = bCtx.createLinearGradient(445, 220, 265, 360);
+      foldRight.addColorStop(0, '#2c3036');
+      foldRight.addColorStop(0.6, '#191b1f');
+      foldRight.addColorStop(1, '#111316');
+      bCtx.fillStyle = foldRight;
+      bCtx.beginPath();
+      bCtx.moveTo(434, 200);
+      bCtx.quadraticCurveTo(448, 265, 402, 315);
+      bCtx.lineTo(260, 372);
+      bCtx.lineTo(272, 322);
+      bCtx.quadraticCurveTo(372, 302, 418, 232);
+      bCtx.closePath();
+      bCtx.fill();
+      bCtx.stroke();
+
+      // Front center collar flap
+      const centerFlap = bCtx.createLinearGradient(150, 310, 370, 385);
+      centerFlap.addColorStop(0, '#1f2227');
+      centerFlap.addColorStop(0.5, '#2b2f36');
+      centerFlap.addColorStop(1, '#16181c');
+      bCtx.fillStyle = centerFlap;
+      bCtx.beginPath();
+      bCtx.moveTo(142, 315);
+      bCtx.quadraticCurveTo(260, 345, 378, 315);
+      bCtx.lineTo(352, 376);
+      bCtx.quadraticCurveTo(260, 392, 168, 376);
+      bCtx.closePath();
+      bCtx.fill();
+      bCtx.stroke();
+
+      // Small luxury gold-cream flower shop tag (like in the photo)
+      bCtx.save();
+      bCtx.translate(215, 342);
+      bCtx.rotate(0.14);
+      bCtx.fillStyle = '#e8e4d8';
+      bCtx.fillRect(-20, -9, 40, 18);
+      bCtx.strokeStyle = '#b59b5c';
+      bCtx.lineWidth = 1;
+      bCtx.strokeRect(-20, -9, 40, 18);
+      bCtx.fillStyle = '#5c4d26';
+      bCtx.font = 'bold 6px Montserrat, sans-serif';
+      bCtx.textAlign = 'center';
+      bCtx.fillText('GRADUATION', 0, 2);
+      bCtx.restore();
+      bCtx.restore();
+
+      // --- E. FLOWING RED SATIN RIBBON BOW ---
+      bCtx.save();
+      const sway = Math.sin(timeSec * 2.2) * 5;
+
+      const ribbonGrad = bCtx.createLinearGradient(200, 360, 310, 560);
+      ribbonGrad.addColorStop(0, '#c91832');
+      ribbonGrad.addColorStop(0.45, '#9b0d22');
+      ribbonGrad.addColorStop(0.75, '#d61f3a');
+      ribbonGrad.addColorStop(1, '#7a0818');
+
+      bCtx.fillStyle = ribbonGrad;
+      bCtx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+      bCtx.shadowBlur = 10;
+      bCtx.shadowOffsetY = 4;
+
+      // Left ribbon tail
+      bCtx.beginPath();
+      bCtx.moveTo(255, 378);
+      bCtx.bezierCurveTo(225, 430, 188 + sway, 485, 168 + sway * 1.4, 535);
+      bCtx.lineTo(186 + sway * 1.4, 542);
+      bCtx.bezierCurveTo(212 + sway, 492, 242, 435, 262, 382);
+      bCtx.closePath();
+      bCtx.fill();
+
+      // Center long ribbon tail
+      bCtx.beginPath();
+      bCtx.moveTo(257, 380);
+      bCtx.bezierCurveTo(252, 450, 245 + sway * 0.8, 520, 242 + sway * 1.2, 588);
+      bCtx.lineTo(260 + sway * 1.2, 590);
+      bCtx.bezierCurveTo(264 + sway * 0.8, 520, 267, 450, 267, 380);
+      bCtx.closePath();
+      bCtx.fill();
+
+      // Right ribbon tail
+      bCtx.beginPath();
+      bCtx.moveTo(265, 378);
+      bCtx.bezierCurveTo(285, 425, 305 + sway, 470, 316 + sway * 1.3, 512);
+      bCtx.lineTo(332 + sway * 1.3, 505);
+      bCtx.bezierCurveTo(318 + sway, 462, 295, 420, 270, 376);
+      bCtx.closePath();
+      bCtx.fill();
+
+      // Left bow loop
+      bCtx.beginPath();
+      bCtx.moveTo(258, 374);
+      bCtx.bezierCurveTo(205, 345, 185, 395, 255, 382);
+      bCtx.closePath();
+      bCtx.fill();
+
+      // Right bow loop
+      bCtx.beginPath();
+      bCtx.moveTo(264, 374);
+      bCtx.bezierCurveTo(318, 345, 336, 395, 266, 382);
+      bCtx.closePath();
+      bCtx.fill();
+
+      // Ribbon center knot
+      bCtx.fillStyle = '#e01e3c';
+      bCtx.beginPath();
+      bCtx.roundRect(251, 368, 20, 18, 5);
+      bCtx.fill();
+      bCtx.restore();
+    }
+
+    /* =========================================================
+       2. HIỆU ỨNG NỀN: CÁNH HOA RƠI, MŨ CỬ NHÂN, KIM TUYẾN & PHÁO HOA
+       ========================================================= */
+    const fxCanvas = document.getElementById('fxCanvas');
+    const fxCtx = fxCanvas.getContext('2d');
+    let W = fxCanvas.width = window.innerWidth;
+    let H = fxCanvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      W = fxCanvas.width = window.innerWidth;
+      H = fxCanvas.height = window.innerHeight;
+    });
+
+    // Stars / sparkles
+    const stars = Array.from({ length: 75 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.8 + 0.5,
+      phase: Math.random() * Math.PI * 2,
+      speed: Math.random() * 0.03 + 0.01
+    }));
+
+    // Falling Rose Petals & Gold Confetti
+    const petals = Array.from({ length: 34 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      size: Math.random() * 8 + 6,
+      vy: Math.random() * 1.1 + 0.55,
+      vx: Math.random() * 0.8 - 0.4,
+      rot: Math.random() * Math.PI * 2,
+      vRot: (Math.random() - 0.5) * 0.04,
+      swing: Math.random() * Math.PI * 2,
+      isGold: Math.random() < 0.28
+    }));
+
+    // Floating Graduation Caps
+    const gradCaps = Array.from({ length: 7 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      size: Math.random() * 10 + 14,
+      vy: -(Math.random() * 0.45 + 0.2),
+      sway: Math.random() * Math.PI * 2,
+      rot: (Math.random() - 0.5) * 0.35
+    }));
+
+    // Fireworks
+    const fireworks = [];
+    const particles = [];
+
+    class Firework {
+      constructor(tx, ty) {
+        this.x = W * (0.25 + Math.random() * 0.5);
+        this.y = H;
+        this.tx = tx;
+        this.ty = ty;
+        const angle = Math.atan2(ty - this.y, tx - this.x);
+        const speed = 9 + Math.random() * 3;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.hue = Math.random() < 0.6 ? 43 : 348; // Gold or Ruby Red
+        this.trail = [];
+      }
+      update() {
+        this.trail.push({ x: this.x, y: this.y });
+        if (this.trail.length > 6) this.trail.shift();
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.08; // slight gravity
+        const dist = Math.hypot(this.tx - this.x, this.ty - this.y);
+        if (dist < 18 || this.vy >= 0) {
+          explodeFirework(this.x, this.y, this.hue);
+          return false;
+        }
+        return true;
+      }
+      draw() {
+        fxCtx.save();
+        fxCtx.strokeStyle = `hsl(${this.hue}, 100%, 65%)`;
+        fxCtx.lineWidth = 2.2;
+        fxCtx.beginPath();
+        if (this.trail.length) {
+          fxCtx.moveTo(this.trail[0].x, this.trail[0].y);
+          for (const pt of this.trail) fxCtx.lineTo(pt.x, pt.y);
+        }
+        fxCtx.stroke();
+        fxCtx.restore();
+      }
+    }
+
+    function explodeFirework(x, y, baseHue) {
+      const count = 58;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.2;
+        const speed = Math.random() * 4.8 + 1.2;
+        const hue = Math.random() < 0.7 ? baseHue : (baseHue === 43 ? 348 : 45);
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          alpha: 1,
+          decay: Math.random() * 0.016 + 0.012,
+          hue,
+          size: Math.random() * 2.4 + 1.2
+        });
+      }
+    }
+
+    function drawGradCap(ctx, x, y, s, rot) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot);
+      ctx.globalAlpha = 0.72;
+
+      // Mortarboard top diamond
+      ctx.fillStyle = '#1b263b';
+      ctx.strokeStyle = '#ffd166';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.55);
+      ctx.lineTo(s, 0);
+      ctx.lineTo(0, s * 0.55);
+      ctx.lineTo(-s, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Cap skull base
+      ctx.fillStyle = '#0d1b2a';
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.52, s * 0.22);
+      ctx.lineTo(-s * 0.52, s * 0.62);
+      ctx.quadraticCurveTo(0, s * 0.85, s * 0.52, s * 0.62);
+      ctx.lineTo(s * 0.52, s * 0.22);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Gold tassel
+      ctx.strokeStyle = '#ffbe0b';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(s * 0.75, s * 0.35);
+      ctx.lineTo(s * 0.78, s * 0.78);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function launchFireworkAt(x, y) {
+      fireworks.push(new Firework(x, y));
+    }
+
+    // Click / tap anywhere to trigger fireworks
+    window.addEventListener('pointerdown', (e) => {
+      launchFireworkAt(e.clientX, e.clientY);
+      setTimeout(() => {
+        launchFireworkAt(
+          e.clientX + (Math.random() * 140 - 70),
+          Math.max(80, e.clientY - (Math.random() * 90 + 30))
+        );
+      }, 140);
+    });
+
+    // Auto celebratory fireworks
+    setInterval(() => {
+      if (document.hidden) return;
+      const rx = W * (0.15 + Math.random() * 0.7);
+      const ry = H * (0.14 + Math.random() * 0.36);
+      launchFireworkAt(rx, ry);
+    }, 2600);
+
+    // Initial welcome fireworks
+    setTimeout(() => launchFireworkAt(W * 0.28, H * 0.24), 450);
+    setTimeout(() => launchFireworkAt(W * 0.72, H * 0.22), 850);
+
+    const startTime = performance.now();
+
+    function animate(now) {
+      const elapsedSec = (now - startTime) / 1000;
+      drawBouquet(elapsedSec);
+
+      fxCtx.clearRect(0, 0, W, H);
+
+      // 1. Twinkling background stars
+      for (const st of stars) {
+        st.phase += st.speed;
+        const alpha = 0.25 + 0.65 * Math.abs(Math.sin(st.phase));
+        fxCtx.fillStyle = `rgba(255, 232, 163, ${alpha})`;
+        fxCtx.beginPath();
+        fxCtx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+        fxCtx.fill();
+      }
+
+      // 2. Floating graduation caps
+      for (const cap of gradCaps) {
+        cap.y += cap.vy;
+        cap.sway += 0.015;
+        cap.x += Math.sin(cap.sway) * 0.35;
+        if (cap.y < -40) {
+          cap.y = H + 40;
+          cap.x = Math.random() * W;
+        }
+        drawGradCap(fxCtx, cap.x, cap.y, cap.size, cap.rot + Math.sin(cap.sway) * 0.12);
+      }
+
+      // 3. Falling red rose petals & gold confetti
+      for (const p of petals) {
+        p.swing += 0.025;
+        p.x += p.vx + Math.sin(p.swing) * 0.65;
+        p.y += p.vy;
+        p.rot += p.vRot;
+
+        if (p.y > H + 20) {
+          p.y = -20;
+          p.x = Math.random() * W;
+        }
+
+        fxCtx.save();
+        fxCtx.translate(p.x, p.y);
+        fxCtx.rotate(p.rot);
+        if (p.isGold) {
+          fxCtx.fillStyle = 'rgba(255, 213, 79, 0.85)';
+          fxCtx.fillRect(-p.size * 0.45, -p.size * 0.25, p.size * 0.9, p.size * 0.5);
+        } else {
+          // Heart/teardrop rose petal
+          const grad = fxCtx.createLinearGradient(0, -p.size, 0, p.size);
+          grad.addColorStop(0, '#ff4d6d');
+          grad.addColorStop(1, '#9e001c');
+          fxCtx.fillStyle = grad;
+          fxCtx.beginPath();
+          fxCtx.moveTo(0, -p.size * 0.6);
+          fxCtx.bezierCurveTo(p.size * 0.8, -p.size * 0.4, p.size * 0.7, p.size * 0.6, 0, p.size * 0.7);
+          fxCtx.bezierCurveTo(-p.size * 0.7, p.size * 0.6, -p.size * 0.8, -p.size * 0.4, 0, -p.size * 0.6);
+          fxCtx.fill();
+        }
+        fxCtx.restore();
+      }
+
+      // 4. Fireworks & burst particles
+      for (let i = fireworks.length - 1; i >= 0; i--) {
+        if (!fireworks[i].update()) {
+          fireworks.splice(i, 1);
+        } else {
+          fireworks[i].draw();
+        }
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const pt = particles[i];
+        pt.x += pt.vx;
+        pt.y += pt.vy;
+        pt.vy += 0.045;
+        pt.vx *= 0.985;
+        pt.vy *= 0.985;
+        pt.alpha -= pt.decay;
+
+        if (pt.alpha <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+
+        fxCtx.save();
+        fxCtx.globalAlpha = pt.alpha;
+        fxCtx.fillStyle = `hsl(${pt.hue}, 100%, 62%)`;
+        fxCtx.shadowColor = `hsl(${pt.hue}, 100%, 55%)`;
+        fxCtx.shadowBlur = 8;
+        fxCtx.beginPath();
+        fxCtx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+        fxCtx.fill();
+        fxCtx.restore();
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
